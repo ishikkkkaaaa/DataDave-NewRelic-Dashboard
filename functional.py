@@ -2,6 +2,8 @@ from os import listdir
 import os
 from os.path import isfile, join
 import pygame
+import newrelic.agent
+
 
 ##################################
 ## GLOBALS                      ##

@@ -2,6 +2,17 @@ import newrelic.agent
 import math
 import os
 import sys
+import psutil #RAM
+from datetime import datetime
+import time
+from collections import defaultdict #Dictionary with default values
+import uuid #Generating UUIDs
+import logging
+logging.basicConfig(level=logging.INFO)
+logging.info("This is a log message.")
+
+
+
 
 # try catch for failure on no evnironment variable NEW_RELIC_CONFIG_FILE
 try:
@@ -10,7 +21,7 @@ try:
         raise Exception("No NEW_RELIC_CONFIG_FILE environment variable found. Not starting the game.")
     else:
         print("Starting New Relic agent.")
-        newrelic.agent.initialize() #This is required! [RLF]
+        newrelic.agent.initialize('newrelic.ini') #This is required! [RLF]
 except Exception as error:
     print(error)
     sys.exit(1)
@@ -204,6 +215,15 @@ Main
 
 def main():
     ##Init pygame
+
+# session start
+
+    session_id = str(uuid.uuid4()) 
+    retry_count = 0
+    retry_counter = defaultdict(int)
+    lives_counter = defaultdict(lambda: 1)
+
+
     pygame.init()
     game_screen = Screen(SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -239,6 +259,17 @@ def main():
 
             # build the level and init screen and player positions
             Level = Map(current_level_number)
+            
+            # Timer start of level
+            level_start_time = datetime.now()
+
+            #RLF define
+            mem = psutil.virtual_memory()
+            ram_used_mb = (mem.total - mem.available) / (1024 * 1024)
+            event_type = "LevelRAMUsage"
+            params = {'level': current_level_number, 'ram_used_mb': ram_used_mb}
+            newrelic.agent.record_custom_event(event_type, params, application=application)
+
             (player_position_x, player_position_y) = Level.initPlayerPositions(current_spawner_id, GamePlayer)
 
             spawner_pos_x = Level.getPlayerSpawnerPosition(current_spawner_id)[0]
@@ -292,6 +323,10 @@ def main():
                     if pressed_keys[key]:
                         key_map[i] = 1
                 GamePlayer.movementInput(key_map)
+                
+                # event_type = "Movement"
+                # params = {'fly': GamePlayer.getCurrentState() == STATE.FLY,'jump': GamePlayer.getCurrentState() == STATE.JUMP, 'climb': GamePlayer.getCurrentState() == STATE.CLIMB, 'walk': GamePlayer.getCurrentState() == STATE.WALK,'current_level': current_level_number}
+                # newrelic.agent.record_custom_event(event_type, params, application=application)
 
                 # update the player position in the level and treat collisions
                 if GamePlayer.getCurrentState() != STATE.DESTROY:
@@ -312,8 +347,42 @@ def main():
                 elif GamePlayer.getCurrentState() == STATE.DESTROY:
                     if death_timer == -1:
                         GamePlayer.takeLife()
+
+                        # cause of death
+                        cause_of_death = GamePlayer.cause_of_death
+
+                        # Record Level Retry event here
+                        #retry_count += 1
+                        retry_counter[current_level_number] += 1
+                        event_type = "LevelRetry"
+                        params = {'current_level': current_level_number,'player_score': GamePlayer.score,'lives_remaining': GamePlayer.lives,'retry_count': retry_counter[current_level_number],'session_id': session_id}                  
+                        newrelic.agent.record_custom_event(event_type, params, application=application)
+                        #lives_counter[current_level_number] += 1
+                        # Record custom New Relic event [RLF] 
+
+
+                        event_type = "LivesUsed"
+                        params = {
+                            'current_level': current_level_number,
+                            'player_score': GamePlayer.score,
+                            'remaining_lives': GamePlayer.lives,
+                            'lives_counter': 1,
+                            'session_id': session_id,
+                            'cause_of_death': cause_of_death
+                        }
+                        newrelic.agent.record_custom_event(event_type, params, application=application)
+
+                        #log
+                        # logging.info(f"Level {current_level_number} Retry Count: {retry_counter[current_level_number]}")
+                        # logging.info(f"Level {current_level_number} Lives Counter: {lives_counter[current_level_number]}")
+                        # logging.info(f" Lives lOST: {GamePlayer.lives}")
+                        logging.info(f" Death reason: {cause_of_death}")
+
+                        GamePlayer.lives
+
                         DeathPuff = AnimatedTile("explosion", 0)
                         death_timer = 120
+
 
                     player_position_y += 0.25
                     death_timer -= 1
@@ -324,6 +393,7 @@ def main():
                         del DeathPuff
 
                         if (GamePlayer.resetPosAndState() != -1):
+
                             (player_position_x, player_position_y) = Level.getPlayerSpawnerPosition(current_spawner_id)
                             player_position_x *= WIDTH_OF_MAP_NODE
                             player_position_y *= HEIGHT_OF_MAP_NODE
@@ -334,6 +404,12 @@ def main():
                             event_type = "GameIncomplete"
                             params = {'current_level': current_level_number, 'player_score': GamePlayer.score}
                             newrelic.agent.record_custom_event(event_type, params, application=application)
+
+                            # Gameplayed death
+                            event_type = "LivesLeft"
+                            params = {'current_level': current_level_number,'player_score': GamePlayer.score,'lives_remaining': GamePlayer.lives}                  
+                            newrelic.agent.record_custom_event(event_type, params, application=application)
+
 
                 # if the player is close enough to one of the screen boundaries, move the screen.
                 player_close_to_left_boundary = (player_position_x <= game_screen.getXPositionInPixelsUnscaled() + BOUNDARY_DISTANCE_TRIGGER)
@@ -389,6 +465,15 @@ def main():
                 pygame.display.flip()
                 pygame.event.pump()
                 clock.tick(200)
+            
+            # timer end
+            level_end_time = datetime.now()
+            level_duration_sec = (level_end_time - level_start_time).total_seconds()
+
+            # Record custom New Relic event [RLF]
+            event_type = "LevelCompletionTime"
+            params = {'level': current_level_number, 'duration_sec': level_duration_sec}
+            newrelic.agent.record_custom_event(event_type, params, application=application)  
 
             # Record custom New Relic event [RLF]
             event_type = "LevelUp"
@@ -427,11 +512,17 @@ def main():
 
         savePlayerScore(GamePlayer.getScore(), game_screen, tileset)
         showScores(game_screen, tileset)
+ 
 
     pygame.quit()
     quit()
 
+
+
+
+
 application = newrelic.agent.register_application(timeout=5) # force New Relic agent registration [RLF]
+#application = newrelic.agent.application()
 
 if __name__ == "__main__":
     main()

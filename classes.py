@@ -6,6 +6,9 @@ from math import floor
 from enum import Enum
 from random import randint
 import pygame
+import logging
+logging.basicConfig(level=logging.INFO)
+
 
 '''
 Constants and enumerations
@@ -1293,6 +1296,7 @@ class Player(Dynamic):
             self.inventory = {"jetpack": 0, "gun": 0, "trophy": 0, "tree": 0}
             self.score = 0
             self.lives = 3
+            self.cause_of_death = "unknown"
             self.animator = PlayerAnimator()
         else:
             ErrorInvalidConstructor()
@@ -1495,8 +1499,9 @@ class Player(Dynamic):
         event_type = "CollectedItem"
         params = {'item.id': item.getId(), 'item.score': item.getScore(), 'item.type': item.getType(),
                   'item.isEquipment': itemIsEquipment, 'levelNumber': self.currentLevelNumber, 'item.gfx_id': self.gfx_id}
-        newrelic.agent.record_custom_event(
-            event_type, params, application=newrelic.agent.application())
+        newrelic.agent.record_custom_event(event_type, params, application=newrelic.agent.application())
+
+        logging.info(f" Item tpes: {item.getType()}")
 
         # if the player got to a certain score, give one life to him
         if self.score % 5000 == 0:
@@ -1514,6 +1519,7 @@ class Player(Dynamic):
             self.setCurrentState(STATE.ENDMAP)
         # player collided with a hazard
         elif element.getType() == INTSCENERYTYPE.HAZARD:
+            self.cause_of_death = element.getId() 
             self.setCurrentState(STATE.DESTROY)
         # player has contact with a tree
         elif element.getType() == INTSCENERYTYPE.TREE:
@@ -1530,6 +1536,7 @@ class Player(Dynamic):
         collision = level.checkPlayerCollision(player_x, player_y, 20, 16)
         collision_type = collision[0]
         collider_pos = collision[1]
+    
 
         # Collect an item if there is one
         if collision_type == COLLISION.ITEM:

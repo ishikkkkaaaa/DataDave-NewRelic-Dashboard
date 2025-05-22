@@ -1,111 +1,354 @@
-![New Relic logo](https://newrelic.com/static-assets/images/logo/nr-logo-50vh.png)
-# Introduction
-If you don't already know why you need a monitoring and observability solution, it can be challenging to find an example that is illustrative, compelling, and engaging. There are literally thousands of "monitor this fake take-out food website" examples and - while they certainly show a valid real-world example of something you might want to monitor - they are usually a real yawner.
+# DAVE
 
-What if - and hear us out - you could play around with a monitoring solution AND PLAY A VIDEO GAME at the same time?!? WE KNOW, RIGHT?!?
-
-That's what this example is all about. Install a game, set it up in New Relic, and then play the game to see your stats.
-
-Dangerous Dave was a classic 1980's side-scroller style game that many spent hours playing when we should have been doing productive work. Now we've turned the tables, making Dave help with our actual work.
-
-The point of this project is two-fold:
-
- 1. To give folks a fun way to kick the tires on New Relic monitoring;
- 2. and to show how easy it is to instrument a custom application, capture and collect non-standard metrics, and display them in a meaningful way.
-
-We hope you enjoy!
+## 📁 Project Folder Breakdown: `DATADAVECHALLENGE_DEVREL/`
 
 ---
 
-## Assignment
+### 📁 `venv/`
 
-This assignment involves setting up monitoring for your game using New Relic's Python Agent. Your goal is to collect data (telemetry) about how players interact with the game.
-
-**What you need to do:**
-
-*Instrument the game code*: You'll need to add code snippets to your game's Python code (game.py) to capture specific data points. These code snippets will utilize APIs provided by the New Relic Python Agent SDK.
-
-*Capture custom telemetry*: Focus on capturing data that's unique to your game and provides valuable insights.
-
-You can capture the custom telemetry from the game that will require specific APIs from the New Relic Python Agent SDK.
-
-### Sample Instrumentation
-
-
-You will find one <u>function already instrumented</u> and one instance of <u>custom instrumentation</u> on line:277 in `game.py`
-
-```python
-# Record custom New Relic event [RLF]
-event_type = "GameIncomplete"
-params = {'current_level': current_level_number, 'player_score': GamePlayer.score}
-newrelic.agent.record_custom_event(event_type, params, application=application)
-```
-
-**HINT**: The placeholders are included to help you setup the instrumentation. Look for the following comment in the `game.py`
-
-```python
-# Record custom New Relic event [RLF]
-```
+- **Local virtual environment** created with `python -m venv venv`.
+- Includes:
+    - `bin/`: Executables and scripts like `activate`
+    - `lib/`: Installed Python packages
+    - `include/`: Header files for packages
+- **Important**: Keeps dependencies isolated from your global Python install.
 
 ---
 
-## Prerequisites
+### 📄 `.python-version`
 
-- You'll need a New Relic account. The good news is that you can create a [free account here](https://newrelic.com/signup?utm_source=event&utm_medium=community&utm_campaign=apj-fy-24-q1-devrel-kcdmumbai) (no credit card required).
-- To run the program, you must have Python 3 installed.
-- You will need to install the following packages using `pip` before starting the program. You may wish to install these packages in a [virtual environment](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/).
-  - pygame (e.g. `pip3 install pygame`)
-
----
-
-
-## Primary Goals and Expected Outcomes:
-
-1. New Relic instrumentation
-
-- Set up instrumentation for the application.
-
-- Update the newrelic.ini file by replacing INSERT_YOUR_INGEST_LICENSE_KEY_HERE with your account's [ingest license key](https://docs.newrelic.com/docs/apis/intro-apis/new-relic-api-keys/).
-
-2. Setup Custom Dashboard
-
-  - To see your game stats on a New Relic dashboard edit the [game_stats.json](game_stats.json) file by doing a global search and replace to substitute "YOUR_ACCOUNT_ID" with your 7-digit [account ID](https://docs.newrelic.com/docs/accounts/accounts-billing/account-structure/account-id/).
-
-  - Then, copy the modified JSON and [import the dashboard](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/introduction-dashboards/#dashboards-import) into your New Relic account.
-<br>
-3. Custom Instrumentation
-  - Evaluate the [game_stats.json](game_stats.json) and setup custom instrumentation for all the custom events similar to the example provided in the `game.py`.
-  - Capture **MOST** of the events if not all. You can find the details of the custom events in the provided dashboards file. 
-  - Refer to the sample of the [populated dashboard](Game_Stats-Dashboard_sample.pdf) (file:Game_Stats-Dashboard_sample.pdf) included in the zip folder
-<br>
-4. Documentation (Optional)
-  - Document the changes you made to the codebase and the steps you took to set up the New Relic account and dashboard.
-  - Include any challenges you faced and how you overcame them.
+- Created by `pyenv`.
+- Tells the project to use Python **3.10.13** (or whatever version you installed with pyenv).
+- Ensures consistent behavior across machines.
 
 ---
 
-## Submission:
-Submit the Assignment with instrumented codebase in a Git repository along with your New Relic Account ID and email address used for creating the New Relic Account.
+### 🧠 `classes.py`
+
+- Defines core game classes such as:
+    - `Player`, `Enemy`, `Item`, `Bullet`, etc.
+- Contains object-oriented logic (e.g., health, movement, collisions).
+- A good place to instrument state transitions or score calculations.
 
 ---
 
-## Running the program
+### 🧩 `functional.py`
 
-- You can run the game by running the main python script located at the root of the repository: `python3 game.py`. This should start the game immediately.
-
----
-
-## Troubleshooting
-
-- If the game is crashing or you are unable to run the game, make sure you have complete the prerequisites above especially the ENV VAR and adding New Relic License Key to the `newrelic.ini` file.
-- After adding the ENV VAR (`export NEW_RELIC_CONFIG_FILE=/Users/username/Downloads/dangerous-dave/newrelic.ini`), launch the game using the binary from the same terminal instance. Alternatively you can add the ENV VAR to your `.bashrc`, `.zshrc` or `.bash_profile` file and restart your terminal session.
-
+- Contains utility or helper functions used across the game.
+- Example: pathfinding, level generation, calculations.
+- Used for stat handling or procedural events.
 
 ---
 
+### 🎮 `game.py`
 
-### Dangerous Dave Replica
-*(this is the original description you can find over on https://github.com/mwolfart/dangerous-dave) We remain deeply indebted to them for their effort to bring this classic game to life on the python platform! - Rachel and Leon)*
+- **The heart of the game.**
+- Runs the main game loop using Pygame.
+- This is where you:
+    - Handle rendering and input
+    - Track scores, events, levels
+    - **Add New Relic instrumentation!**
 
- - This project is a replica of the 1988 DOS game Dangerous Dave, made by John Romero. The project was built in Python along with a team of three students (Arthur Medeiros, Guilherme Cattani and me), as a course assignment.
- - The goal of the project was to study and practice the three types of programming paradigms: imperative, object-oriented and functional. To achieve this, we picked Python as a language since it can perform all three types of tasks in a fairly good way.
+---
+
+### 📊 `game_stats.json`
+
+- JSON template to set up your custom **New Relic dashboard**.
+- Replace `"YOUR_ACCOUNT_ID"` with your actual ID.
+- Contains widgets that visualize.
+- Import this into New Relic’s dashboard editor
+
+---
+
+### 📄 `newrelic.ini`
+
+- Configuration file for the **New Relic Python Agent**.
+- Must include your:
+    - `license_key`
+    - `app_name`
+    - Optional: `audit_log_file` for tracking outgoing events
+- **Linked to your environment** via:
+    
+    ```bash
+    
+    export NEW_RELIC_CONFIG_FILE=/path/to/newrelic.ini
+    ```
+    
+
+---
+
+### 📄 `newrelic-audit.log`
+
+- Custom log (only appears if configured in `newrelic.ini`).
+- Logs every event sent to New Relic.
+- Crucial for debugging: shows whether your events were actually dispatched.
+
+---
+
+### 📄 `requirements.txt`
+
+- Lists all Python dependencies.
+
+## ✅ Dangerous Dave Game Setup with New Relic Instrumentation
+
+### 📘 Create a New Relic Account (Before You Start)
+
+To instrument and monitor the game, you'll need a New Relic account. If you don’t already have one:
+
+- **Sign up here**: [https://newrelic.com/signup](https://newrelic.com/signup) *(no credit card required)*
+- Or follow this video walkthrough to create your account:
+    
+    📺 [Watch on YouTube](https://www.youtube.com/watch?v=sFt1Tx5qPRU)
+    
+
+Once your account is ready, you'll get:
+
+- Your **Account ID**
+- Your **License (Ingest) Key - Create a new one!!**
+    
+    You’ll need both of these during the instrumentation and dashboard setup.
+    
+
+### 1. **Install Prerequisites**
+
+- **Install Python 3.10** (required, as newer versions may not work):
+    
+    ```bash
+    brew install pyenv
+    pyenv install 3.10.13
+    pyenv local 3.10.13
+    ```
+    
+- **Verify Python version**:
+    
+    ```bash
+    python --version
+    ```
+    
+
+---
+
+### 2. **Set Up Virtual Environment**
+
+- Create and activate virtual environment:
+    
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+    
+- Upgrade pip and install dependencies:
+    
+    ```bash
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    ```
+    
+
+---
+
+### 3. **Install & Configure New Relic**
+
+- Generate `newrelic.ini` using your **New Relic license key**:
+    
+    ```bash
+    newrelic-admin generate-config <YOUR_LICENSE_KEY> newrelic.ini
+    ```
+    
+- **Set the environment variable** so Python can find the config:
+    
+    ```bash
+    export NEW_RELIC_CONFIG_FILE=/absolute/path/to/your/newrelic.in
+    ```
+    
+- (Optional) Add the export command to your shell profile (`.bashrc`, `.zshrc`) to persist it.
+- **Verify it’s working**:
+    
+    ```bash
+    cat $NEW_RELIC_CONFIG_FILE
+    ```
+    
+
+---
+
+### 4. **Update Config Files with Your Account Info**
+
+- In both `game.py` and `newrelic.ini`, update:
+    - Your **New Relic Account ID**
+    - (If required) License key in the `.ini`
+
+---
+
+### 5. **Run the Game**
+
+- Launch the instrumented game:
+    
+    ```bash
+    python game.py
+    ```
+    
+
+---
+
+### 6. **Setup the Dashboard (Optional but Recommended)**
+
+- Then, [import the dashboard](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/introduction-dashboards/#dashboards-import) into your New Relic account via the UI.
+- Click on Import Dashboard, and paste your Updated JSON Code.
+
+![D1](Screenshots/image.png)
+![D2](Screenshots/image_1.png)
+
+### ✅ **Primary Custom Events & Their Datapoints**
+
+These are recorded using `newrelic.agent.record_custom_event()` in your game:
+
+### 1. **GameComplete / GameIncomplete**
+
+- `current_level`
+- `player_score`
+
+### 2. **LevelUp**
+
+- `current_level`
+- `player_score`
+
+### 3. **LivesUsed**
+
+- `cause_of_death` (e.g., fire, water, tentacles)
+
+### 4. **LivesLeft**
+
+- `current_level`
+
+### 5. **CollectedItem**
+
+- `item.id`
+- `item.type`
+- `item.score` (aggregated in dashboards)
+
+### 6. **LevelRAMUsage**
+
+- `level`
+- `ram_used_mb`
+
+### 7. **LevelCompletionTime**
+
+- `level`
+- `duration_sec`
+
+### 8. **LevelRetry**
+
+- `current_level`
+- `retry_count`
+
+### 9. **Movement**
+
+- `walk`
+- `jump`
+
+### ✅ Summary of All Datapoints for Instrumentation
+
+| Category | Datapoints |
+| --- | --- |
+| Score | `player_score`, `max(player_score)` |
+| Levels | `current_level`, `level`, `max(current_level)` |
+| Items | `item.id`, `item.type`, `item.score`, `# Collected`, `Total Value` |
+| Deaths | `cause_of_death`, `LivesLeft` count per level |
+| RAM Usage | `ram_used_mb` per level |
+| Completion Time | `duration_sec` per level |
+| Retries | `retry_count` per level |
+| Movement | `walk`, `jump` |
+| Metadata/Session | `GameComplete`, `GameIncomplete`, `timestamp`, `appName`, `accountId`  |
+
+## ⚠️ Common Issues & Fixes for New Relic Instrumentation
+
+### 1. ❌ **Incorrect Python Version**
+
+- **Issue**: Game or New Relic agent might fail to run or behave inconsistently with Python ≥ 3.11.
+- **Fix**:
+    
+    Use Python **< 3.10** (e.g., 3.10.13) using `pyenv`:
+    
+    ```bash
+    bash
+    CopyEdit
+    brew install pyenv
+    pyenv install 3.10.13
+    pyenv local 3.10.13
+    
+    ```
+    
+
+---
+
+### 2. ❌ **Hard to Debug What Events Are Triggered**
+
+- **Issue**: It's unclear which events are firing or if they're being sent.
+- **Fix**:
+    - Use Python's built-in **`logging`** module liberally during instrumentation:
+        
+        ```python
+        python
+        CopyEdit
+        import logging
+        logging.basicConfig(level=logging.INFO)
+        logging.info(f"Sending event: {event_type} - {params}")
+        
+        ```
+        
+    - Helps verify data structures and identify bugs early.
+
+---
+
+### 3. ❌ **Events Not Appearing in Dashboard**
+
+- **Issue**: Events aren't visible in your New Relic dashboard.
+- **Fixes**:
+    - **Enable event audit logging** in your `newrelic.ini` file:
+        
+        ```
+        ini
+        CopyEdit
+        audit_log_file = /absolute/path/to/newrelic-audit.log
+        ```
+        
+        This will log every event being sent.
+        
+    - Check this file to confirm that events are being **dispatched** properly.
+
+---
+
+### 4. ❌ **Movement Events Broke Other Events**
+
+- **Issue**: After adding `Movement` events (walk/jump), other events stopped triggering.
+- **Cause**: Movement events were **too frequent** (~800+ per minute), hitting New Relic’s **event rate limit**(1000/min).
+- **Fix**:
+    - **Throttle** movement-related events:
+        - Use a **timer** or **event deduplication** strategy to limit how often they’re sent.
+        - For example, log movement once every X seconds or after a state change.
+    
+    Batch multiple movement flags into one event if possible.
+    
+
+---
+
+### 5. ❌ **Dashboard Chart Not Displaying Correctly**
+
+- **Issue**: A chart/widget doesn't show expected data.
+- **Fixes**:
+    - Edit the dashboard directly in New Relic UI and **inspect the NRQL query**.
+    - Try using **Query AI** in New Relic to help auto-correct or refine NRQL.
+    - Use **`SINCE` and `TIMESERIES`** clauses appropriately to debug time-sensitive queries.
+
+---
+
+## ✅ Pro Tips:
+
+- Keep a **log window open** while playing the game to monitor live event logs.
+- If you're testing locally, avoid overwhelming the agent with low-value telemetry (like every pixel step or frame).
+- Ensure **unique and consistent attribute naming** (`player_score`, `current_level`, etc.) for NRQL queries to work.
+
+---
+
+New Relic Account ID - **6750116**
+Email Address - imusun24@gmail.com
