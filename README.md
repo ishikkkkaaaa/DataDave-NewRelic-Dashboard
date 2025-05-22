@@ -190,13 +190,13 @@ Once your account is ready, you'll get:
 
 ---
 
-### 6. **Setup the Dashboard (Optional but Recommended)**
+### 6. **Setup the Dashboard **
 
 - Then, [import the dashboard](https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/introduction-dashboards/#dashboards-import) into your New Relic account via the UI.
 - Click on Import Dashboard, and paste your Updated JSON Code.
 
 ![D1](Screenshots/image.png)
-![D2](Screenshots/image_1.png)
+![D2](Screenshots/image1.png)
 
 ### ✅ **Primary Custom Events & Their Datapoints**
 
