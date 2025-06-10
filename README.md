@@ -270,8 +270,6 @@ These are recorded using `newrelic.agent.record_custom_event()` in your game:
     Use Python **< 3.10** (e.g., 3.10.13) using `pyenv`:
     
     ```bash
-    bash
-    CopyEdit
     brew install pyenv
     pyenv install 3.10.13
     pyenv local 3.10.13
@@ -288,8 +286,6 @@ These are recorded using `newrelic.agent.record_custom_event()` in your game:
     - Use Python's built-in **`logging`** module liberally during instrumentation:
         
         ```python
-        python
-        CopyEdit
         import logging
         logging.basicConfig(level=logging.INFO)
         logging.info(f"Sending event: {event_type} - {params}")
@@ -308,7 +304,6 @@ These are recorded using `newrelic.agent.record_custom_event()` in your game:
         
         ```
         ini
-        CopyEdit
         audit_log_file = /absolute/path/to/newrelic-audit.log
         ```
         
